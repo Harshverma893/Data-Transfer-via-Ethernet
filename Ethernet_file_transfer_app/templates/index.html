@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Transfer App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .progress-bar {
+            transition: width 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center p-6 font-sans">
+    <div class="w-full max-w-2xl bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Upload File</h2>
+        <div id="drop-area" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors">
+            <p class="text-gray-600 mb-2">Drag & Drop files here or click to upload</p>
+            <form id="uploadForm" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" id="fileInput" required class="hidden">
+                <label for="fileInput" class="inline-block bg-blue-500 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-blue-600 transition">Choose File</label>
+                <input type="submit" value="Upload" class="mt-2 bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition">
+            </form>
+        </div>
+
+        <div class="progress mt-4 hidden" id="uploadProgressContainer">
+            <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                <div class="progress-bar bg-blue-500 h-full text-white text-xs font-medium text-center leading-4" id="uploadProgressBar">0%</div>
+            </div>
+        </div>
+        <p id="uploadTimer" class="text-sm text-gray-600 mt-2"></p>
+        <p id="uploadSummary" class="text-sm text-green-600 mt-1"></p>
+    </div>
+
+    <div class="w-full max-w-2xl mt-6 bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Uploaded Files</h2>
+        <ul class="space-y-4">
+        {% for file, size in files %}
+            <li class="file-entry flex flex-col bg-gray-50 p-4 rounded-md">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-700">{{ file }} ({{ '%.2f'|format(size) }} MB)</span>
+                    <div class="space-x-2">
+                        <button onclick="downloadFile('{{file}}')" class="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition">Download</button>
+                        <a href="/delete/{{file}}" onclick="return confirm('Delete this file?');" class="text-red-500 hover:text-red-600">Delete</a>
+                    </div>
+                </div>
+                <div class="loader text-sm text-gray-600 mt-2" id="loader-{{file}}"></div>
+                <div class="progress mt-2 hidden" id="progress-{{file}}">
+                    <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                        <div class="progress-bar bg-blue-500 h-full text-white text-xs font-medium text-center leading-4" id="bar-{{file}}">0%</div>
+                    </div>
+                </div>
+                <p id="summary-{{file}}" class="text-sm text-green-600 mt-1"></p>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('fileInput');
+        const uploadProgressBar = document.getElementById('uploadProgressBar');
+        const uploadProgressContainer = document.getElementById('uploadProgressContainer');
+        const uploadTimer = document.getElementById('uploadTimer');
+        const uploadSummary = document.getElementById('uploadSummary');
+
+        uploadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(uploadForm);
+            const xhr = new XMLHttpRequest();
+
+            uploadProgressContainer.classList.remove('hidden');
+            let startTime = Date.now();
+
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    uploadProgressBar.style.width = percent + '%';
+                    uploadProgressBar.textContent = percent + '%';
+
+                    const elapsed = (Date.now() - startTime) / 1000;
+                    const uploadedMB = (e.loaded / (1024 * 1024)).toFixed(2);
+                    const speedMBps = (e.loaded / 1024 / 1024 / elapsed).toFixed(2);
+                    uploadTimer.textContent = `Uploaded ${uploadedMB} MB at ${speedMBps} MBps in ${elapsed.toFixed(1)}s`;
+                }
+            });
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const totalTime = (Date.now() - startTime) / 1000;
+                    const totalMB = (fileInput.files[0].size / 1024 / 1024).toFixed(2);
+                    const avgSpeed = (totalMB / totalTime).toFixed(2);
+                    uploadSummary.textContent = `Upload complete. Avg Speed: ${avgSpeed} MBps`;
+                    location.reload();
+                }
+            };
+
+            xhr.open('POST', '/');
+            xhr.send(formData);
+        });
+
+        async function downloadFile(filename) {
+            const url = `/download/${filename}`;
+            const loader = document.getElementById('loader-' + filename);
+            const progressDiv = document.getElementById('progress-' + filename);
+            const bar = document.getElementById('bar-' + filename);
+            const summary = document.getElementById('summary-' + filename);
+
+            loader.textContent = 'Starting download...';
+            progressDiv.classList.remove('hidden');
+
+            const response = await fetch(url);
+            const reader = response.body.getReader();
+            const contentLength = +response.headers.get('Content-Length');
+
+            let received = 0;
+            let chunks = [];
+            const startTime = Date.now();
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                received += value.length;
+
+                const percent = Math.round((received / contentLength) * 100);
+                bar.style.width = percent + '%';
+                bar.textContent = percent + '%';
+
+                const elapsed = (Date.now() - startTime) / 1000;
+                const receivedMB = (received / 1024 / 1024).toFixed(2);
+                const totalMB = (contentLength / 1024 / 1024).toFixed(2);
+                const speedMBps = (received / 1024 / 1024 / elapsed).toFixed(2);
+                const eta = ((contentLength - received) / 1024 / 1024 / speedMBps).toFixed(1);
+
+                loader.textContent = `Downloaded ${receivedMB} MB of ${totalMB} MB (${speedMBps} MBps, ETA: ${eta}s)`;
+            }
+
+            const totalTime = (Date.now() - startTime) / 1000;
+            const avgSpeed = (contentLength / 1024 / 1024 / totalTime).toFixed(2);
+            summary.textContent = `Download complete. Avg Speed: ${avgSpeed} MBps`;
+
+            const blob = new Blob(chunks);
+            const downloadUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(downloadUrl);
+
+            loader.textContent = 'Download complete!';
+            setTimeout(() => {
+                loader.textContent = '';
+                progressDiv.classList.add('hidden');
+            }, 3000);
+        }
+
+        const dropArea = document.getElementById('drop-area');
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.classList.add('border-blue-500');
+        });
+
+        dropArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('border-blue-500');
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('border-blue-500');
+            fileInput.files = e.dataTransfer.files;
+        });
+    </script>
+</body>
+</html>
