@@ -1,139 +1,167 @@
-Data Transfer via Ethernet
-A Flask-based web application for efficient file and folder transfers over local Ethernet networks. Featuring a user-friendly interface with drag-and-drop functionality, real-time performance metrics, and a custom file transfer protocol, this project supports reliable transfers of large files up to 10GB with minimal latency.
-Features
+# 📁 Data Transfer via Ethernet
 
-Drag-and-Drop Uploads: Intuitive file and folder uploads via a modern web interface.
-Performance Metrics: Displays real-time download/upload speed and transfer time.
-Large File Support: Handles files and folders up to 10GB with a custom protocol for reliability.
-Responsive Design: Built with Tailwind CSS for a clean, mobile-friendly UI.
-Local Network Optimization: Designed for high-speed, low-latency transfers over Ethernet.
+A **Flask-based web application** for efficient file and folder transfers over a local Ethernet network. Built for high-speed, low-latency communication, this project features drag-and-drop uploads, real-time transfer performance metrics, and support for large file handling with reliability.
 
-Technologies
+---
 
-Backend: Flask, Python
-Frontend: HTML, JavaScript, Tailwind CSS
-Libraries: os, shutil, time (Python standard libraries)
-Network: Runs on local networks (e.g., 192.168.1.100:5002)
+## 🚀 Features
 
-Setup Instructions
-Prerequisites
+- **🔼 Drag-and-Drop Uploads**: Simple and modern interface for easy file and folder selection.
+- **📊 Real-Time Metrics**: Displays upload/download speed and estimated transfer time.
+- **📂 Large File Support**: Handles large files using a custom protocol for reliability.
+- **📡 Optimized for LAN**: Designed specifically for fast, stable Ethernet-based networks.
 
-Python 3.8 or higher
-Git
-Two laptops connected to the same Ethernet network (via switch/router)
-Administrative access to configure network settings
+---
 
-Step-by-Step Setup
+## 🧰 Technologies Used
 
-Check or Configure Ethernet IPv4 Address:
+- **Backend**: Flask, Python  
+- **Frontend**: HTML, CSS, JavaScript  
+- **Libraries**: `os`, `shutil`, `time` (standard Python libraries)
 
-On the host laptop (where the app will run):
-Windows:
-Open Control Panel > Network and Internet > Network and Sharing Center.
-Click Change adapter settings, right-click Ethernet, and select Properties.
-Select Internet Protocol Version 4 (TCP/IPv4) and click Properties.
-Ensure Obtain an IP address automatically is selected, or manually set an IP (e.g., 192.168.1.100, Subnet mask: 255.255.255.0).
-Run ipconfig in Command Prompt to confirm the IP (look for Ethernet adapter’s IPv4 address, e.g., 192.168.1.100).
+---
 
+## ⚙️ Setup Instructions
 
-Linux:
-Open Settings > Network or use nmcli.
-Check Ethernet connection and note the IPv4 address (e.g., ip addr show eth0).
-If needed, set a static IP: sudo nmcli con mod "Wired connection 1" ipv4.addresses 192.168.1.100/24 ipv4.method manual.
+### ✅ Prerequisites
 
+- Python 3.8 or higher  
+- Git  
+- Two laptops connected via the same Ethernet network  
+- Admin access to set IP addresses
 
+---
 
+## 🛠️ Step-by-Step Setup
 
-Ensure the second laptop is on the same network (e.g., IP 192.168.1.101).
+### 1. 🔌 Configure Ethernet IP (Host System)
 
+#### On **Windows**:
+- Go to: Control Panel → Network and Sharing Center → Change Adapter Settings
+- Right-click **Ethernet** → Properties → Select **IPv4** → Properties
+- Set:
+  - IP address: `192.168.1.100`
+  - Subnet mask: `255.255.255.0`
+- Confirm using: `ipconfig`
 
-Clone the Repository:
+#### On **Linux**:
+```bash
+sudo nmcli con mod "Wired connection 1" ipv4.addresses 192.168.1.100/24 ipv4.method manual
+```
+> Use `ip addr` or `nmcli` to confirm your IP.
+
+Make sure the second laptop is on the same subnet (e.g., `192.168.1.101`).
+
+---
+
+### 2. 📥 Clone the Repository
+
+```bash
 git clone https://github.com/Harshverma893/Data-Transfer-via-Ethernet.git
 cd Data-Transfer-via-Ethernet
+```
 
+### 3. 🧪 Create & Activate Virtual Environment
 
-Create and Activate a Virtual Environment:
+```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate   # On Windows: venv\Scripts\activate
+```
 
+### 4. 📦 Install Dependencies
 
-Install Dependencies:
+```bash
 pip install flask
+```
 
+### 5. ▶️ Run the Application
 
-Run the Application:
-
-Replace 192.168.1.100 with your host laptop’s Ethernet IPv4 address.
-
+```bash
 python app.py --host 192.168.1.100 --port 5002
+```
 
+> Replace the host IP with your actual IP. Make sure port `5002` is allowed through the firewall.
 
-Note: Ensure port 5002 is open (check firewall settings).
+---
 
+## 🌐 Usage Instructions
 
+### 🖥 Access the Web App
 
-Usage
+- On both laptops: open `http://192.168.1.100:5002` in a browser
 
-Connect Both Laptops to the Same Ethernet Network:
+### 📁 Upload Files
 
-Physically connect both laptops to the same Ethernet switch or router.
-Verify connectivity by pinging the host from the second laptop:ping 192.168.1.100
+- Drag and drop files/folders or use the file selector
+- View progress bar and speed in real time
 
+### 📤 Download Files
 
+- See all uploaded files in the list
+- Click download links to retrieve them
 
+### 📊 Monitor Metrics
 
-Access the Web App:
+- Real-time upload/download speeds shown in MB/s
+- Custom protocol ensures reliability on large files
 
-On the host laptop, open a browser and navigate to http://192.168.1.100:5002.
-On the second laptop (same network), open a browser and visit the same URL: http://192.168.1.100:5002.
-Ensure firewalls allow traffic on port 5002.
+---
 
+## 🧪 Troubleshooting
 
-Upload Files:
+### ❌ Can’t Access the Web App?
+- Ensure both devices are on same subnet
+- Confirm firewall allows port 5002
+- Use `ipconfig` or `ip addr` to check IPs
 
-Use the drag-and-drop area or click to select files/folders for upload.
-Monitor upload progress and real-time metrics (speed, time) on the UI.
+### ❗ Port Already in Use?
+```bash
+python app.py --port 5003
+```
 
+---
 
-Download Files:
+## 🖼 Screenshots & Demo
 
-View uploaded files in the app’s file list.
-Click download links to retrieve files, with speed metrics displayed.
+Coming soon: UI screenshots and drag-and-drop demo video.
 
+---
 
-Monitor Performance:
+## 🤝 Contributing
 
-Both laptops can upload/download simultaneously, with real-time speed metrics (e.g., MB/s) shown.
-The custom protocol ensures reliable transfers for files up to 10GB.
+Contributions are welcome!  
+1. Fork the repository  
+2. Create a new feature branch  
+3. Submit a pull request following **PEP 8** guidelines
 
+---
 
+## 📄 License
 
-Troubleshooting
-
-Cannot Access URL:
-Verify both laptops are on the same Ethernet network (same subnet, e.g., 192.168.1.x).
-Check firewall settings: Allow Flask (python) and port 5002.
-Confirm the correct IP/port (run ipconfig or ip addr on the host).
-
-
-Slow Transfers:
-Ensure Ethernet cables are Cat5e/Cat6 for high-speed transfers.
-Check network congestion or switch/router performance.
-
-
-Port Conflict:
-If 5002 is in use, change the port in app.py or the run command (e.g., --port 5003).
-
-
-
-Screenshots
-Coming soon: UI screenshot and drag-and-drop demo video.
-Contributing
-Contributions are welcome! Fork the repository, create a branch, and submit a pull request with your changes. Follow PEP 8 guidelines.
-License
 MIT License
-Contact
 
-GitHub: Harshverma893
-LinkedIn: Harsh Verma
+Copyright (c) 2025 Harsh Verma
 
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## 📬 Contact
+
+- GitHub: [@Harshverma893](https://github.com/Harshverma893)
